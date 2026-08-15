@@ -34,4 +34,6 @@ uvicorn cashflow.api:app --reload
 
 Open `reports/REPORT.md` for the benchmark analysis and `http://127.0.0.1:8000/docs` for the API.
 
+Open `reports/SCENARIO_REPORT.md` for precision/recall/F1, category accuracy, duplicate exposure, and corruption-scenario analysis.
+
 All data is synthetic and intended to demonstrate methodology, not production performance.

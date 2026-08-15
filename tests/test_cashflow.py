@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from cashflow.api import app
 from cashflow.features import build_cashflow_features
+from cashflow.evaluation import SCENARIOS, build_scenario_report, evaluate_scenario
 from cashflow.income import build_income_features, detect_income
 from cashflow.normalization import normalize_transactions
 from cashflow.synthetic import SyntheticConfig, generate_transactions
@@ -43,3 +44,17 @@ def test_api_benchmark():
     response = client.get("/benchmark")
     assert response.status_code == 200
     assert response.json()["detected_income_events"] > 0
+
+
+def test_income_metrics_are_bounded():
+    result = evaluate_scenario(SyntheticConfig(seed=4, entities=10, days=60), "mixed")
+    assert result["scenario"] == "mixed"
+    assert 0 <= result["precision"] <= 1
+    assert 0 <= result["recall"] <= 1
+    assert 0 <= result["f1"] <= 1
+
+
+def test_scenario_report_covers_all_corruption_modes(tmp_path):
+    result = build_scenario_report(SyntheticConfig(seed=5, entities=10, days=60), tmp_path)
+    assert set(result["scenario"]) == set(SCENARIOS)
+    assert (tmp_path / "SCENARIO_REPORT.md").exists()
