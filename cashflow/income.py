@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from .cadence import cadence_features
+
 
 def detect_income(transactions: pd.DataFrame) -> pd.DataFrame:
     result = transactions.copy()
@@ -32,4 +34,5 @@ def build_income_features(transactions: pd.DataFrame) -> pd.DataFrame:
     ).reset_index()
     result["income_amount_cv"] = grouped["credit"].agg(lambda values: float(np.std(values) / np.mean(values)) if np.mean(values) else 0.0).values
     result["income_share_of_credits"] = result["total_detected_income"] / grouped["credit"].sum().reset_index()["credit"].replace(0, np.nan).fillna(1).values
-    return result
+    cadence = cadence_features(income)
+    return result.drop(columns=["income_events"], errors="ignore").merge(cadence, on="entity_id", how="outer")

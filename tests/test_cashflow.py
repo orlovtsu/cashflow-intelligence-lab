@@ -38,6 +38,8 @@ def test_feature_engineering_is_finite_and_entity_level():
     assert len(income) == len(cashflow)
     assert income["income_events"].ge(0).all()
     assert cashflow["duplicate_rate"].between(0, 1).all()
+    assert income["median_income_interval_days"].ge(0).all()
+    assert income["income_interval_cv"].ge(0).all()
 
 
 def test_api_benchmark():
