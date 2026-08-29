@@ -33,4 +33,9 @@ def generate_transactions(config: SyntheticConfig = SyntheticConfig()) -> pd.Dat
                 credit = amount if category in {"refund", "lender_like"} and rng.random() < 0.25 else 0.0
                 debit = 0.0 if credit else amount
                 rows.append({"entity_id": entity_id, "date": date, "description": category.upper() + " TRANSACTION", "debit": debit, "credit": credit, "category": category, "is_income": False})
-    return pd.DataFrame(rows)
+    frame = pd.DataFrame(rows).sort_values(["entity_id", "date"]).reset_index(drop=True)
+    frame["balance"] = frame.groupby("entity_id").apply(
+        lambda group: 500.0 + (group["credit"] - group["debit"]).cumsum(),
+        include_groups=False,
+    ).reset_index(level=0, drop=True).sort_index()
+    return frame

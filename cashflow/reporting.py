@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
+from .reconciliation import reconciliation_metrics
 def build_report(income_features: pd.DataFrame, cashflow_features: pd.DataFrame, output_dir: Path = Path("reports")) -> None:
-    output_dir.mkdir(parents=True, exist_ok=True)
+def build_report(income_features: pd.DataFrame, cashflow_features: pd.DataFrame, output_dir: Path = Path("reports"), transactions: pd.DataFrame | None = None) -> None:
     merged = income_features.merge(cashflow_features, on="entity_id")
     figure, axes = plt.subplots(1, 3, figsize=(15, 4.8), constrained_layout=True)
     axes[0].hist(merged["total_detected_income"], bins=20, color="#2f6f9f")
@@ -33,6 +34,9 @@ def build_report(income_features: pd.DataFrame, cashflow_features: pd.DataFrame,
         for field in selected
     )
     (output_dir / "REPORT.md").write_text(f"""# Cashflow Intelligence Report
+    reconciliation_section = ""
+    if transactions is not None:
+        reconciliation_section = f"## Balance reconciliation\n\n`{reconciliation_metrics(transactions)}`\n\nThe check verifies that previous balance plus credits minus debits matches the reported balance.\n\n"
 
 All transactions are synthetic. This report evaluates normalization, income detection, confidence, recurring cashflow features, and duplicate exposure.
 
@@ -52,6 +56,8 @@ All transactions are synthetic. This report evaluates normalization, income dete
 | --- | ---: | ---: |
 {rows}
 
+
+{reconciliation_section}
 ## Limitations
 
 The generator is synthetic and does not represent real financial institutions, people, employers, or production performance. A production extension would add audited labels, cadence validation, source-specific parsers, and human-reviewed error analysis.

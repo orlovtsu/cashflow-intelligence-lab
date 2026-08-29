@@ -14,7 +14,7 @@ from cashflow.synthetic import SyntheticConfig, generate_transactions
 def main():
     transactions = normalize_transactions(generate_transactions(SyntheticConfig()))
     enriched = detect_income(transactions)
-    build_report(build_income_features(enriched), build_cashflow_features(enriched))
+    build_report(build_income_features(enriched), build_cashflow_features(enriched), transactions=enriched)
     build_scenario_report()
     print("report=reports/REPORT.md")
 

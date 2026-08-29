@@ -5,6 +5,7 @@ from cashflow.features import build_cashflow_features
 from cashflow.evaluation import SCENARIOS, build_scenario_report, evaluate_scenario
 from cashflow.income import build_income_features, detect_income
 from cashflow.normalization import normalize_transactions
+from cashflow.reconciliation import reconciliation_metrics
 from cashflow.synthetic import SyntheticConfig, generate_transactions
 
 
@@ -40,6 +41,13 @@ def test_feature_engineering_is_finite_and_entity_level():
     assert cashflow["duplicate_rate"].between(0, 1).all()
     assert income["median_income_interval_days"].ge(0).all()
     assert income["income_interval_cv"].ge(0).all()
+
+
+def test_running_balance_reconciles():
+    frame = normalize_transactions(generate_transactions(SyntheticConfig(seed=11, entities=5, days=30)))
+    metrics = reconciliation_metrics(frame)
+    assert metrics["pass_rate"] == 1.0
+    assert metrics["max_absolute_error"] <= 0.01
 
 
 def test_api_benchmark():
