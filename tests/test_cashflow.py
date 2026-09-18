@@ -2,7 +2,13 @@ from fastapi.testclient import TestClient
 
 from cashflow.api import app
 from cashflow.features import build_cashflow_features
-from cashflow.evaluation import SCENARIOS, build_scenario_report, evaluate_scenario
+from cashflow.evaluation import (
+    SCENARIOS,
+    build_scenario_report,
+    confidence_calibration_summary,
+    evaluate_scenario,
+    feature_family_summary,
+)
 from cashflow.income import build_income_features, detect_income
 from cashflow.normalization import normalize_transactions
 from cashflow.reconciliation import reconciliation_metrics
@@ -68,3 +74,18 @@ def test_scenario_report_covers_all_corruption_modes(tmp_path):
     result = build_scenario_report(SyntheticConfig(seed=5, entities=10, days=60), tmp_path)
     assert set(result["scenario"]) == set(SCENARIOS)
     assert (tmp_path / "SCENARIO_REPORT.md").exists()
+
+
+def test_feature_family_summary_is_stable_and_explainable():
+    frame = detect_income(normalize_transactions(generate_transactions(SyntheticConfig(seed=3, entities=12, days=45))))
+    summary = feature_family_summary(frame)
+    assert set(summary["family"]) == {"income_signal", "cadence", "cashflow_behavior", "quality_control"}
+    assert summary["coverage"].between(0, 1).all()
+
+
+def test_confidence_calibration_summary_is_bounded():
+    frame = detect_income(normalize_transactions(generate_transactions(SyntheticConfig(seed=9, entities=18, days=60))))
+    summary = confidence_calibration_summary(frame)
+    assert len(summary) >= 3
+    assert summary["mean_confidence"].between(0, 1).all()
+    assert summary["observed_rate"].between(0, 1).all()

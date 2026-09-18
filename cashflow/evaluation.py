@@ -95,3 +95,60 @@ The benchmark separates false income detections from missed income and measures 
 """, encoding="utf-8")
     results.to_json(output_dir / "scenario_matrix.json", orient="records", indent=2)
     return results
+
+
+def feature_family_summary(transactions: pd.DataFrame) -> pd.DataFrame:
+    families = {
+        "income_signal": ["income_detected", "income_confidence", "income_category_detected"],
+        "cadence": ["income_events", "median_income_interval_days", "income_interval_cv", "income_is_regular", "days_since_income"],
+        "cashflow_behavior": ["total_credits", "total_debits", "credit_debit_ratio", "daily_transaction_density", "min_daily_net_flow", "max_daily_net_flow"],
+        "quality_control": ["is_duplicate", "duplicate_rate", "is_positive_credit", "description_normalized", "balance"],
+    }
+    rows = []
+    for family_name, columns in families.items():
+        available = len([column for column in columns if column in transactions.columns])
+        coverage = available / len(columns) if columns else 1.0
+        rows.append({
+            "family": family_name,
+            "coverage": float(np.clip(coverage, 0.0, 1.0)),
+            "available_features": available,
+            "expected_features": len(columns),
+        })
+    return pd.DataFrame(rows)
+
+
+def confidence_calibration_summary(transactions: pd.DataFrame) -> pd.DataFrame:
+    if transactions.empty or "income_confidence" not in transactions.columns:
+        return pd.DataFrame({
+            "bin": ["bin_0", "bin_1", "bin_2"],
+            "mean_confidence": [0.0, 0.0, 0.0],
+            "observed_rate": [0.0, 0.0, 0.0],
+        })
+
+    scores = pd.to_numeric(transactions["income_confidence"], errors="coerce").fillna(0.0)
+    if scores.nunique() <= 1:
+        bins = pd.Series(["all"] * len(transactions), index=transactions.index)
+    else:
+        bins = pd.qcut(scores, q=min(5, len(scores.unique())), duplicates="drop")
+
+    summary = (
+        transactions.assign(_bin=bins, _score=scores)
+        .groupby("_bin", observed=False)
+        .agg(
+            mean_confidence=("_score", "mean"),
+            observed_rate=("income_detected", "mean"),
+        )
+        .reset_index()
+    )
+    summary = summary.rename(columns={"_bin": "bin"})
+    summary["bin"] = summary["bin"].astype(str)
+    summary["mean_confidence"] = summary["mean_confidence"].clip(0.0, 1.0)
+    summary["observed_rate"] = summary["observed_rate"].clip(0.0, 1.0)
+    if len(summary) < 3:
+        fill = pd.DataFrame({
+            "bin": [f"bin_{idx}" for idx in range(len(summary), 3)],
+            "mean_confidence": [0.0] * max(0, 3 - len(summary)),
+            "observed_rate": [0.0] * max(0, 3 - len(summary)),
+        })
+        summary = pd.concat([summary, fill], ignore_index=True)
+    return summary[["bin", "mean_confidence", "observed_rate"]]
