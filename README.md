@@ -32,8 +32,10 @@ python scripts/run_report.py
 uvicorn cashflow.api:app --reload
 ```
 
-Open `reports/REPORT.md` for the benchmark analysis and `http://127.0.0.1:8000/docs` for the API.
+Open [reports/REPORT.md](reports/REPORT.md) for the benchmark analysis and `http://127.0.0.1:8000/docs` for the API.
 
-Open `reports/SCENARIO_REPORT.md` for precision/recall/F1, category accuracy, duplicate exposure, and corruption-scenario analysis.
+Open [reports/SCENARIO_REPORT.md](reports/SCENARIO_REPORT.md) for precision/recall/F1, category accuracy, duplicate exposure, and corruption-scenario analysis. Both reports, their PNG charts, and the underlying JSON metrics are committed in this repository and were produced by an actual run of `scripts/run_report.py` with the default seeded configuration — they are not hand-written.
+
+See [docs/architecture.md](docs/architecture.md) for the pipeline design and module boundaries, and [MODEL_CARD.md](MODEL_CARD.md) for scope, data, evaluation numbers, and limitations.
 
 All data is synthetic and intended to demonstrate methodology, not production performance.
