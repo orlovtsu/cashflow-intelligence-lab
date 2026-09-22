@@ -7,7 +7,7 @@ def reconciliation_metrics(transactions: pd.DataFrame, tolerance: float = 0.01) 
     expected = previous + ordered["credit"] - ordered["debit"]
     errors = (ordered["balance"] - expected).abs()
     return {
-        "rows": int(len(ordered)),
+        "rows": len(ordered),
         "pass_rate": float((errors <= tolerance).mean()) if len(ordered) else 1.0,
         "mean_absolute_error": float(errors.mean()) if len(ordered) else 0.0,
         "max_absolute_error": float(errors.max()) if len(ordered) else 0.0,

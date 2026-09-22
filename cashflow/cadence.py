@@ -13,7 +13,7 @@ def cadence_features(income_transactions: pd.DataFrame, as_of: pd.Timestamp | No
         reference_date = as_of if as_of is not None else ordered["date"].max()
         rows.append({
             "entity_id": entity_id,
-            "income_events": int(len(ordered)),
+            "income_events": len(ordered),
             "median_income_interval_days": float(np.median(intervals)) if len(intervals) else 0.0,
             "income_interval_cv": interval_cv,
             "income_is_regular": bool(len(intervals) >= 2 and interval_cv <= 0.35),

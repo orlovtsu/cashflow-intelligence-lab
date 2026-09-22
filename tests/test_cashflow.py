@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 
 from cashflow.api import app
-from cashflow.features import build_cashflow_features
 from cashflow.evaluation import (
     SCENARIOS,
     build_scenario_report,
@@ -9,11 +8,11 @@ from cashflow.evaluation import (
     evaluate_scenario,
     feature_family_summary,
 )
+from cashflow.features import build_cashflow_features
 from cashflow.income import build_income_features, detect_income
 from cashflow.normalization import normalize_transactions
 from cashflow.reconciliation import reconciliation_metrics
 from cashflow.synthetic import SyntheticConfig, generate_transactions
-
 
 client = TestClient(app)
 

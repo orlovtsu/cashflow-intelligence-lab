@@ -28,7 +28,7 @@ def generate_transactions(config: SyntheticConfig = SyntheticConfig()) -> pd.Dat
                 amount = round(float(rng.normal(620, 35)), 2)
                 rows.append({"entity_id": entity_id, "date": date, "description": "GOVERNMENT BENEFIT PAYMENT", "debit": 0.0, "credit": amount, "category": "benefit", "is_income": True})
             if rng.random() < 0.16:
-                category = rng.choice(["purchase", "transfer", "refund", "lender_like"])
+                category = str(rng.choice(["purchase", "transfer", "refund", "lender_like"]))
                 amount = round(float(rng.uniform(12, 480)), 2)
                 credit = amount if category in {"refund", "lender_like"} and rng.random() < 0.25 else 0.0
                 debit = 0.0 if credit else amount
