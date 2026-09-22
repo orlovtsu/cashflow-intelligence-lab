@@ -14,6 +14,7 @@ def build_report(
     output_dir: Path = Path("reports"),
     transactions: pd.DataFrame | None = None,
 ) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
     merged = income_features.merge(cashflow_features, on="entity_id")
     figure, axes = plt.subplots(1, 3, figsize=(15, 4.8), constrained_layout=True)
     axes[0].hist(merged["total_detected_income"], bins=20, color="#2f6f9f")
